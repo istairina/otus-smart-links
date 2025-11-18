@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "conditions": [
+      { "type": "time", "start": "09:00", "end": "12:00" },
+      { "type": "browser", "is": "Chrome" },
+      { "type": "geo", "is": "RU" }
+    ],
+    "action": { "redirectTo": "test" }
+  }
+]
