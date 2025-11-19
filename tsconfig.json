@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "paths": {
+      "@shared/*": [
+        "shared/*"
+      ],
+      "@rules-service/*": [
+        "services/rules-service/*"
+      ],
+      "@redirect-service/*": [
+        "services/redirect-service/*"
+      ]
+    }
+  }
+}

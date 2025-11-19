@@ -1,4 +1,4 @@
-import { ConditionPlugin, Context } from "../types";
+import { ConditionPlugin, Context } from "@shared/types";
 
 export abstract class AbstractCondition implements ConditionPlugin { 
     abstract type: string;

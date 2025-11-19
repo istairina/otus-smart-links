@@ -1,0 +1,42 @@
+services:
+  db:
+    build: ./services/db
+    container_name: db
+    env_file:
+      - ./services/db/.env
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    networks:
+      - smartlinks
+
+  rules-service:
+    build: ./services/rules-service
+    container_name: rules-service
+    depends_on:
+      - db
+    env_file:
+      - ./services/rules-service/.env
+    ports:
+      - "${RULES_PORT}:${RULES_PORT}"
+    environment:
+      DB_URL: ${DB_URL}
+    networks:
+      - smartlinks
+
+  redirector:
+    build: ./services/redirect-service
+    container_name: redirector
+    depends_on:
+      - rules-service
+    env_file:
+      - ./services/redirect-service/.env
+    ports:
+      - "${REDIRECT_SERVICE_PORT}:${REDIRECT_SERVICE_PORT}"
+    environment:
+      RULES_SERVICE_URL: ${RULES_URL}
+    networks:
+      - smartlinks
+
+networks:
+  smartlinks:
+    driver: bridge
