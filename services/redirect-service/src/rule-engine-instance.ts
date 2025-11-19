@@ -1,7 +1,7 @@
-import * as Conditions from "@shared/rules";
-import { AbstractCondition } from "@shared/rules";
-import rules from "../rules/db/rules.json";
-import { RuleEngine } from "../rules/rule-engine";
+import * as Conditions from "@shared/types";
+import { AbstractCondition } from "@shared/types";
+import rules from "@db/data/rules.json";
+import { RuleEngine } from "@rules-service";
 
 const plugins = [];
 const exported = Conditions as Record<string, any>;

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 
 export function contextMiddleware(req: Request, res: Response, next: NextFunction) {
     const now = new Date();
-    const time = now.toISOString().substring(11, 16); // HH:MM
+    const time = now.toISOString().substring(11, 16); 
 
     const userAgent = req.headers["user-agent"] ?? "";
     const browser = userAgent.includes("Safari")
@@ -11,7 +11,7 @@ export function contextMiddleware(req: Request, res: Response, next: NextFunctio
         ? "Chrome"
         : "Unknown";
 
-    const geo = (req.headers["x-geo"] as string) || "Unknown"; // или определение IP->страна
+    const geo = (req.headers["x-geo"] as string) || "Unknown"; 
 
     req.context = { time, browser, geo };
     next();
