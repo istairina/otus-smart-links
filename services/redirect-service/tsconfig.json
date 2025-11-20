@@ -3,12 +3,18 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "outDir": "dist",
-    "rootDir": "src",
     "module": "commonjs",
     "target": "es2020",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {},
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
   ]
 }

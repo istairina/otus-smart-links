@@ -5,6 +5,20 @@
 **/.npm/
 **/.cache/
 
+# Compiled TypeScript files outside dist/
+# Note: shared/dist/ is already covered by **/dist/ above
+shared/*.js
+shared/*.js.map
+shared/*.d.ts
+shared/*.d.ts.map
+shared/*.tsbuildinfo
+
+# Compiled JS files in services src/ directories
+services/**/src/**/*.js
+services/**/src/**/*.js.map
+services/**/src/**/*.d.ts
+services/**/src/**/*.d.ts.map
+
 # Logs
 **/npm-debug.log*
 **/yarn-debug.log*
@@ -13,3 +27,7 @@
 
 # Env
 *.env
+
+# Coverage
+**/coverage/
+**/.nyc_output/

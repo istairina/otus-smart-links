@@ -3,12 +3,22 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "outDir": "dist",
-    "rootDir": "src",
     "module": "commonjs",
     "target": "es2020",
     "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@db/*": ["../db/src/*"]
+    },
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*"
   ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "../db/**/*"
+  ]
 }

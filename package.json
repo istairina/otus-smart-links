@@ -1,0 +1,27 @@
+{
+  "name": "otus-smart-links",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "services/*"
+  ],
+  "scripts": {
+    "install:services": "node scripts/install-services.js",
+    "postinstall": "npm run build:shared",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "test": "node scripts/test-all.js",
+    "test:coverage": "node scripts/test-coverage-all.js",
+    "dev": "node scripts/start-dev-all.js",
+    "build:shared": "cd shared && npm run build"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.9.3"
+  }
+}
+

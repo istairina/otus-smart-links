@@ -2,10 +2,17 @@
   {
     "id": 1,
     "conditions": [
-      { "type": "time", "start": "09:00", "end": "12:00" },
-      { "type": "browser", "is": "Chrome" },
-      { "type": "geo", "is": "RU" }
+      { "type": "time", "start": "22:00", "end": "23:00" },
+      { "type": "user-agent", "include": "Chrome" },
+      { "type": "language", "is": "ru" }
     ],
-    "action": { "redirectTo": "test" }
+    "action": { "redirectTo": "https://yandex.ru" }
+  },
+  {
+    "id": 2,
+    "conditions": [
+      { "type": "time", "start": "01:00", "end": "12:00" }
+    ],
+    "action": { "redirectTo": "https://www.google.com" }
   }
 ]

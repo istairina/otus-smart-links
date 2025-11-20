@@ -2,15 +2,28 @@ FROM node:22
 
 WORKDIR /app
 
-COPY ../../tsconfig.json ./tsconfig.base.json
-COPY package*.json ./
+# Copy package files for workspace setup
+COPY package.json package-lock.json ./
+COPY shared/package.json ./shared/
+COPY services/rules-service/package.json ./services/rules-service/
 
-RUN npm install
+# Install dependencies (this will link workspace packages)
+# Ignore scripts to prevent postinstall from running before files are copied
+RUN npm install --ignore-scripts
 
-COPY . .
+# Copy source files
+COPY shared ./shared
+COPY services/rules-service ./services/rules-service
+COPY tsconfig.json ./
 
-RUN mv tsconfig.base.json tsconfig.json
+# Build shared types first, then the service
+WORKDIR /app/shared
 RUN npm run build
+
+WORKDIR /app/services/rules-service
+RUN npm run build
+
+WORKDIR /app/services/rules-service
 
 EXPOSE 4000
 

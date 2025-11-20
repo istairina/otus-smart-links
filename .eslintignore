@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+*.js
+*.d.ts
+shared/**/*.js
+**/*.config.js
+**/package-lock.json
+

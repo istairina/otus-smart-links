@@ -3,3 +3,4 @@ export type Rule = {
     conditions: { type: string; [k: string]: any }[];
     action: { redirectTo: string };
 };
+
