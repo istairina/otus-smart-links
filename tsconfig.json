@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "noImplicitAny": true,
+    "paths": {
+      "@db/*": [
+        "services/db/src/*"
+      ],
+      "@rules-service/*": [
+        "services/rules-service/*"
+      ],
+      "@redirect-service/*": [
+        "services/redirect-service/*"
+      ]
+    }
+  }
+}
