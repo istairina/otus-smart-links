@@ -78,13 +78,22 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+export { app, engine, loadRulesFromDb };
 
-app.listen(PORT, () => {
-  const url = `http://localhost:${PORT}`;
-  console.log(`Rules service running on ${url}`);
-  
-  loadRulesFromDb().catch((error) => {
-    console.error("Failed to load initial rules, service will continue without rules:", error);
-    console.log("Rules can be loaded later via POST /reload endpoint");
+function startServer(): void {
+  app.listen(PORT, () => {
+    const url = `http://localhost:${PORT}`;
+    console.log(`Rules service running on ${url}`);
+    
+    loadRulesFromDb().catch((error) => {
+      console.error("Failed to load initial rules, service will continue without rules:", error);
+      console.log("Rules can be loaded later via POST /reload endpoint");
+    });
   });
-});
+}
+
+export { startServer };
+
+if (require.main === module) {
+  startServer();
+}

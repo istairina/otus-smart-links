@@ -1,0 +1,60 @@
+name: CI - Tests and Coverage
+
+on:
+  push:
+    branches: [ main, rules ]
+  pull_request:
+    branches: [ main, rules ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build shared module
+      run: npm run build:shared
+    
+    - name: Run tests with coverage
+      run: npm run test:coverage
+    
+    - name: Upload coverage reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-reports
+        path: |
+          services/*/coverage/**
+    
+    - name: Display coverage
+      if: always()
+      run: |
+        node << 'EOF'
+        const fs = require('fs');
+        const path = require('path');
+        
+        const services = ['db', 'rules-service', 'redirect-service'];
+        
+        services.forEach(service => {
+          const coverageFile = path.join('services', service, 'coverage', 'coverage-summary.json');
+          
+          if (fs.existsSync(coverageFile)) {
+            const data = JSON.parse(fs.readFileSync(coverageFile, 'utf8'));
+            const lines = data.total.lines.pct.toFixed(1);
+            console.log(`${service} - ${lines}%`);
+          } else {
+            console.log(`${service} - N/A`);
+          }
+        });
+        EOF

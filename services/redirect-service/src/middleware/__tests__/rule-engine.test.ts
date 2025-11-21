@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ruleEngineMiddleware } from '../rule-engine';
+import { ruleEngineMiddleware, getRulesServiceUrl } from '../rule-engine';
 
 global.fetch = jest.fn();
 
@@ -41,7 +41,7 @@ describe('ruleEngineMiddleware', () => {
     await ruleEngineMiddleware(mockRequest as Request, mockResponse as Response, nextFunction);
 
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:5001/evaluate',
+      `${getRulesServiceUrl()}/evaluate`,
       {
         method: 'POST',
         headers: {
@@ -114,8 +114,10 @@ describe('ruleEngineMiddleware', () => {
 
     await ruleEngineMiddleware(mockRequest as Request, mockResponse as Response, nextFunction);
 
+    const expectedUrl = getRulesServiceUrl();
+    expect(expectedUrl).toBe('http://localhost:4000');
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:5001/evaluate',
+      `${expectedUrl}/evaluate`,
       expect.any(Object)
     );
     expect(nextFunction).toHaveBeenCalled();

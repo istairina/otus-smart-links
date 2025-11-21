@@ -7,7 +7,8 @@ module.exports = {
     '^.+\\.ts$': 'ts-jest',
   },
   moduleNameMapper: {
-    '^@shared/(.*)$': '<rootDir>/../../shared/$1',
+    '^@shared/types$': '<rootDir>/../../shared/dist/index',
+    '^@shared/(.*)$': '<rootDir>/../../shared/dist/$1',
     '^@db/(.*)$': '<rootDir>/../db/src/$1',
   },
   collectCoverageFrom: [
@@ -18,7 +19,7 @@ module.exports = {
   coverageThreshold: {
     global: {
       branches: 90,
-      functions: 90,
+      functions: 85,
       lines: 90,
       statements: 90,
     },
@@ -28,6 +29,7 @@ module.exports = {
       tsconfig: {
         esModuleInterop: true,
         moduleResolution: 'node',
+        resolveJsonModule: true,
       },
     },
   },

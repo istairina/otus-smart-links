@@ -18,17 +18,18 @@ const contextFieldConfig: Partial<Record<keyof Context, FieldConfig>> = {
   language: {
     headerName: "accept-language",
     processor: (headers) => {
-      const acceptLanguage = headers["accept-language"] as string | undefined;
+      const acceptLanguage = headers["accept-language"];
       if (!acceptLanguage) {
         return "Unknown";
       }
-      const firstLang = acceptLanguage.split(",")[0].trim();
+      const langValue = Array.isArray(acceptLanguage) ? acceptLanguage[0] : acceptLanguage;
+      const firstLang = langValue.split(",")[0].trim();
       return firstLang.split("-")[0].split(";")[0].trim().toLowerCase();
     }
   }
 };
 
-function camelToKebab(str: string): string {
+export function camelToKebab(str: string): string {
   return str.replace(/([A-Z])/g, "-$1").toLowerCase();
 }
 

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { contextMiddleware } from '../context';
+import { contextMiddleware, camelToKebab } from '../context';
 
 describe('contextMiddleware', () => {
   let mockRequest: Partial<Request>;
@@ -172,5 +172,53 @@ describe('contextMiddleware', () => {
     expect(mockRequest.context?.language).toBe('en');
     expect(mockRequest.context?.time).toMatch(/^\d{2}:\d{2}$/);
     expect(nextFunction).toHaveBeenCalled();
+  });
+
+  it('should handle array header values by taking first element', () => {
+    const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
+    mockRequest.headers = {
+      'user-agent': [userAgent, 'another-agent'],
+      'accept-language': ['en-US,en;q=0.9', 'ru-RU,ru;q=0.8']
+    } as any;
+
+    contextMiddleware(mockRequest as Request, mockResponse as Response, nextFunction);
+
+    expect(mockRequest.context?.userAgent).toBe(userAgent);
+    expect(mockRequest.context?.language).toBe('en');
+    expect(nextFunction).toHaveBeenCalled();
+  });
+
+  it('should handle missing headers with camelToKebab conversion', () => {
+    mockRequest.headers = {};
+
+    contextMiddleware(mockRequest as Request, mockResponse as Response, nextFunction);
+
+    expect(mockRequest.context?.userAgent).toBe('Unknown');
+    expect(mockRequest.context?.language).toBe('Unknown');
+    expect(mockRequest.context?.time).toMatch(/^\d{2}:\d{2}$/);
+    expect(nextFunction).toHaveBeenCalled();
+  });
+
+  describe('camelToKebab', () => {
+    it('should convert camelCase to kebab-case', () => {
+      expect(camelToKebab('userAgent')).toBe('user-agent');
+      expect(camelToKebab('acceptLanguage')).toBe('accept-language');
+      expect(camelToKebab('contentType')).toBe('content-type');
+      expect(camelToKebab('xForwardedFor')).toBe('x-forwarded-for');
+    });
+
+    it('should handle strings with multiple capital letters', () => {
+      expect(camelToKebab('XMLHttpRequest')).toBe('-x-m-l-http-request');
+      expect(camelToKebab('HTTPSConnection')).toBe('-h-t-t-p-s-connection');
+    });
+
+    it('should handle already lowercase strings', () => {
+      expect(camelToKebab('useragent')).toBe('useragent');
+      expect(camelToKebab('language')).toBe('language');
+    });
+
+    it('should handle empty string', () => {
+      expect(camelToKebab('')).toBe('');
+    });
   });
 });

@@ -19,7 +19,11 @@ app.use((_req, res) => {
   res.status(404).send("No redirect rule matched");
 });
 
-app.listen(PORT, () => {
-  const url = `http://localhost:${PORT}`;
-  console.log(`Redirect service running on ${url}`);
-});
+export { app };
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    const url = `http://localhost:${PORT}`;
+    console.log(`Redirect service running on ${url}`);
+  });
+}
