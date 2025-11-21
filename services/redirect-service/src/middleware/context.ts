@@ -47,20 +47,11 @@ function getHeaderValue(
   return value;
 }
 
-function getContextKeys(): Array<keyof Context> {
-  const template: Context = {
-    time: "",
-    userAgent: "",
-    language: ""
-  };
-  return Object.keys(template) as Array<keyof Context>;
-}
-
 export function contextMiddleware(req: Request, res: Response, next: NextFunction): void {
   const headers = req.headers;
   const context = {} as Context;
 
-  const contextKeys = getContextKeys();
+  const contextKeys: Array<keyof Context> = ["time", "userAgent", "language"];
   
   for (const fieldName of contextKeys) {
     const config = contextFieldConfig[fieldName];
