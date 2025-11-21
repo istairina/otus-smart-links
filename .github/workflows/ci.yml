@@ -1,4 +1,4 @@
-name: CI - Tests and Coverage (Simple)
+name: CI - Tests and Coverage
 
 on:
   push:

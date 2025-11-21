@@ -7,7 +7,6 @@ console.log('Starting all services in development mode...\n');
 
 const processes = [];
 
-// Запускаем все сервисы параллельно
 services.forEach(service => {
   const servicePath = path.join(__dirname, '..', 'services', service);
   
@@ -35,7 +34,6 @@ services.forEach(service => {
   processes.push({ service, process: proc });
 });
 
-// Обработка завершения процесса
 process.on('SIGINT', () => {
   console.log('\n\nShutting down all services...');
   processes.forEach(({ service, process: proc }) => {

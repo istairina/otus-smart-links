@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import process from "node:process";
 
-const RULES_SERVICE_URL = process.env.RULES_SERVICE_URL || "http://localhost:4000";
+export function getRulesServiceUrl(): string {
+  return process.env.RULES_SERVICE_URL || "http://localhost:4000";
+}
 
 export async function ruleEngineMiddleware(req: Request, res: Response, next: NextFunction) {
   if (!req.context) {
@@ -9,7 +11,7 @@ export async function ruleEngineMiddleware(req: Request, res: Response, next: Ne
   }
 
   try {
-    const response = await fetch(`${RULES_SERVICE_URL}/evaluate`, {
+    const response = await fetch(`${getRulesServiceUrl()}/evaluate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

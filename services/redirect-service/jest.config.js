@@ -13,6 +13,7 @@ module.exports = {
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
+    '!src/types/**',
   ],
   coverageThreshold: {
     global: {

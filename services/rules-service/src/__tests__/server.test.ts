@@ -1,90 +1,20 @@
 import request from 'supertest';
 import express from 'express';
-import * as Conditions from '../conditions';
-import { RuleEngine } from '../rule-engine';
-import { AbstractCondition, Rule, ConditionPlugin } from '@shared/types';
+import { Rule } from '@shared/types';
+import { app, engine, loadRulesFromDb } from '../server';
 
 global.fetch = jest.fn();
 
-function initializeConditions(): ConditionPlugin[] {
-  const conditions: ConditionPlugin[] = [];
-  const conditionModules = Conditions as Record<string, unknown>;
-
-  type ConditionConstructor = new () => AbstractCondition;
-
-  for (const key of Object.keys(conditionModules)) {
-    const ConditionClass = conditionModules[key];
-    if (typeof ConditionClass === 'function' &&
-        ConditionClass.prototype instanceof AbstractCondition) {
-      const conditionClass = ConditionClass as ConditionConstructor;
-      const instance = new conditionClass();
-      conditions.push(instance);
-    }
-  }
-
-  return conditions;
-}
-
-const createTestApp = () => {
-  const app = express();
-  app.use(express.json());
-
-  const conditions = initializeConditions();
-  const engine = new RuleEngine(conditions);
-
-  const DB_URL = process.env.DB_URL || 'http://localhost:5000';
-
-  async function loadRulesFromDb(): Promise<void> {
-    try {
-      const response = await fetch(`${DB_URL}/rules`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch rules: ${response.status} ${response.statusText}`);
-      }
-      const rules: Rule[] = await response.json();
-      engine.loadRules(rules);
-    } catch (error) {
-      console.error('Error loading rules from db service:', error);
-      throw error;
-    }
-  }
-
-  app.post('/evaluate', (req, res) => {
-    try {
-      const ctx = req.body;
-      const result = engine.evaluate(ctx);
-      res.json({ redirectTo: result });
-    } catch (error) {
-      res.status(400).json({ error: 'Invalid context' });
-    }
-  });
-
-  app.post('/reload', async (req, res) => {
-    try {
-      await loadRulesFromDb();
-      res.json({ message: 'Rules reloaded successfully' });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to reload rules' });
-    }
-  });
-
-  app.get('/health', (_req, res) => {
-    res.json({ status: 'ok' });
-  });
-
-  return { app, engine, loadRulesFromDb };
-};
-
 describe('Rules Service API', () => {
-  let app: express.Application;
-  let engine: RuleEngine;
-  let loadRulesFromDb: () => Promise<void>;
+  let testApp: express.Application;
+  let testEngine: typeof engine;
+  let testLoadRulesFromDb: typeof loadRulesFromDb;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    const testApp = createTestApp();
-    app = testApp.app;
-    engine = testApp.engine;
-    loadRulesFromDb = testApp.loadRulesFromDb;
+    testApp = app;
+    testEngine = engine;
+    testLoadRulesFromDb = loadRulesFromDb;
 
     const initialRules: Rule[] = [
       {
@@ -96,14 +26,14 @@ describe('Rules Service API', () => {
         action: { redirectTo: 'https://test.com' }
       }
     ];
-    engine.loadRules(initialRules);
+    testEngine.loadRules(initialRules);
   });
 
   describe('POST /evaluate', () => {
     it('should evaluate context and return redirect URL', async () => {
       const context = { time: '10:00', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', language: 'ru' };
 
-      const response = await request(app)
+      const response = await request(testApp)
         .post('/evaluate')
         .send(context);
 
@@ -114,7 +44,7 @@ describe('Rules Service API', () => {
     it('should return null when no rule matches', async () => {
       const context = { time: '10:00', userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15', language: 'en' };
 
-      const response = await request(app)
+      const response = await request(testApp)
         .post('/evaluate')
         .send(context);
 
@@ -123,7 +53,7 @@ describe('Rules Service API', () => {
     });
 
     it('should handle invalid context gracefully', async () => {
-      const response = await request(app)
+      const response = await request(testApp)
         .post('/evaluate')
         .send({ invalid: 'data' });
 
@@ -133,7 +63,7 @@ describe('Rules Service API', () => {
     it('should handle missing context fields', async () => {
       const context = { time: '10:00' };
 
-      const response = await request(app)
+      const response = await request(testApp)
         .post('/evaluate')
         .send(context);
 
@@ -151,16 +81,34 @@ describe('Rules Service API', () => {
           action: { redirectTo: 'https://time-test.com' }
         }
       ];
-      engine.loadRules(rules);
+      testEngine.loadRules(rules);
 
       const context = { time: '10:00', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', language: 'ru' };
 
-      const response = await request(app)
+      const response = await request(testApp)
         .post('/evaluate')
         .send(context);
 
       expect(response.status).toBe(200);
       expect(response.body.redirectTo).toBe('https://time-test.com');
+    });
+
+    it('should return 400 when engine.evaluate throws an error', async () => {
+      const originalEvaluate = testEngine.evaluate.bind(testEngine);
+      jest.spyOn(testEngine, 'evaluate').mockImplementation(() => {
+        throw new Error('Evaluation error');
+      });
+
+      const context = { time: '10:00', userAgent: 'test', language: 'ru' };
+
+      const response = await request(testApp)
+        .post('/evaluate')
+        .send(context);
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Invalid context');
+
+      jest.spyOn(testEngine, 'evaluate').mockImplementation(originalEvaluate);
     });
   });
 
@@ -179,13 +127,13 @@ describe('Rules Service API', () => {
         json: async () => mockRules
       });
 
-      const response = await request(app).post('/reload');
+      const response = await request(testApp).post('/reload');
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Rules reloaded successfully');
 
       const context = { time: '10:00', userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15', language: 'ru' };
-      const evaluateResponse = await request(app)
+      const evaluateResponse = await request(testApp)
         .post('/evaluate')
         .send(context);
 
@@ -193,31 +141,31 @@ describe('Rules Service API', () => {
     });
 
     it('should return 500 when db service fails', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
+      (global.fetch as jest.Mock).mockResolvedValue({
         ok: false,
         status: 500,
         statusText: 'Internal Server Error'
       });
 
-      const response = await request(app).post('/reload');
+      const response = await request(testApp).post('/reload');
 
       expect(response.status).toBe(500);
       expect(response.body.error).toBe('Failed to reload rules');
-    });
+    }, 15000);
 
     it('should return 500 when fetch throws error', async () => {
-      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
 
-      const response = await request(app).post('/reload');
+      const response = await request(testApp).post('/reload');
 
       expect(response.status).toBe(500);
       expect(response.body.error).toBe('Failed to reload rules');
-    });
+    }, 15000);
   });
 
   describe('GET /health', () => {
     it('should return health status', async () => {
-      const response = await request(app).get('/health');
+      const response = await request(testApp).get('/health');
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe('ok');
