@@ -84,6 +84,17 @@ describe('TimeCondition', () => {
       const result = condition.check(ctx, cond);
       expect(result).toBe(true);
     });
+
+    it('should return false when time is undefined in context', () => {
+      const ctx: Context = { 
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        language: 'ru' 
+      } as Context;
+      const cond = { start: '09:00', end: '12:00' };
+
+      const result = condition.check(ctx, cond);
+      expect(result).toBe(false);
+    });
   });
 });
 

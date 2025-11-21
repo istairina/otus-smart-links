@@ -7,7 +7,7 @@ export class LanguageCondition extends AbstractCondition {
       return ctx.language === cond.is;
     }
     if (cond.include !== undefined) {
-      return ctx.language.includes(cond.include);
+      return ctx.language?.includes(cond.include) ?? false;
     }
     return false;
   }

@@ -4,6 +4,9 @@ export class TimeCondition extends AbstractCondition {
   type = "time";
 
   check(ctx: Context, cond: any): boolean {
+    if (!ctx.time) {
+      return false;
+    }
     const [start, end] = [cond.start, cond.end];
 
     const toMinutes = (t: string) => {

@@ -119,6 +119,28 @@ describe('UserAgentCondition', () => {
       const result = condition.check(ctx, cond);
       expect(result).toBe(false);
     });
+
+    it('should return false when userAgent is undefined in context', () => {
+      const ctx: Context = { 
+        time: '10:00', 
+        language: 'ru' 
+      } as Context;
+      const cond = { include: 'Chrome' };
+
+      const result = condition.check(ctx, cond);
+      expect(result).toBe(false);
+    });
+
+    it('should return false when userAgent is undefined and using is', () => {
+      const ctx: Context = { 
+        time: '10:00', 
+        language: 'ru' 
+      } as Context;
+      const cond = { is: 'Mozilla/5.0' };
+
+      const result = condition.check(ctx, cond);
+      expect(result).toBe(false);
+    });
   });
 });
 

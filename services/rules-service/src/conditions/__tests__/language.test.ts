@@ -76,6 +76,28 @@ describe('LanguageCondition', () => {
       const result = condition.check(ctx, cond);
       expect(result).toBe(false);
     });
+
+    it('should return false when language is undefined in context', () => {
+      const ctx: Context = { 
+        time: '10:00', 
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      } as Context;
+      const cond = { is: 'ru' };
+
+      const result = condition.check(ctx, cond);
+      expect(result).toBe(false);
+    });
+
+    it('should return false when language is undefined and using include', () => {
+      const ctx: Context = { 
+        time: '10:00', 
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      } as Context;
+      const cond = { include: 'ru' };
+
+      const result = condition.check(ctx, cond);
+      expect(result).toBe(false);
+    });
   });
 });
 

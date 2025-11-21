@@ -14,5 +14,13 @@
       { "type": "time", "start": "01:00", "end": "12:00" }
     ],
     "action": { "redirectTo": "https://www.google.com" }
+  },
+  {
+    "id": 3,
+    "conditions": [
+      { "type": "time", "start": "13:00", "end": "23:00"},
+      { "type": "user-agent", "include": "Chrome" }
+    ],
+    "action": { "redirectTo": "https://www.otus.ru" }
   }
 ]

@@ -110,6 +110,118 @@ describe('Rules Service API', () => {
 
       jest.spyOn(testEngine, 'evaluate').mockImplementation(originalEvaluate);
     });
+
+    it('should match rule without language condition for any language', async () => {
+      const rules: Rule[] = [
+        {
+          id: 1,
+          conditions: [
+            { type: 'time', start: '13:00', end: '23:00' },
+            { type: 'user-agent', include: 'Chrome' }
+          ],
+          action: { redirectTo: 'https://www.otus.ru' }
+        }
+      ];
+      testEngine.loadRules(rules);
+
+      const contextRu = { time: '15:00', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', language: 'ru' };
+      const responseRu = await request(testApp)
+        .post('/evaluate')
+        .send(contextRu);
+      expect(responseRu.status).toBe(200);
+      expect(responseRu.body.redirectTo).toBe('https://www.otus.ru');
+
+      const contextEn = { time: '15:00', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', language: 'en' };
+      const responseEn = await request(testApp)
+        .post('/evaluate')
+        .send(contextEn);
+      expect(responseEn.status).toBe(200);
+      expect(responseEn.body.redirectTo).toBe('https://www.otus.ru');
+
+      const contextNoLanguage = { time: '15:00', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' };
+      const responseNoLanguage = await request(testApp)
+        .post('/evaluate')
+        .send(contextNoLanguage);
+      expect(responseNoLanguage.status).toBe(200);
+      expect(responseNoLanguage.body.redirectTo).toBe('https://www.otus.ru');
+    });
+
+    it('should match rule without user-agent condition for any user-agent', async () => {
+      const rules: Rule[] = [
+        {
+          id: 1,
+          conditions: [
+            { type: 'time', start: '13:00', end: '23:00' },
+            { type: 'language', is: 'ru' }
+          ],
+          action: { redirectTo: 'https://example.com' }
+        }
+      ];
+      testEngine.loadRules(rules);
+
+      const contextChrome = { time: '15:00', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', language: 'ru' };
+      const responseChrome = await request(testApp)
+        .post('/evaluate')
+        .send(contextChrome);
+      expect(responseChrome.status).toBe(200);
+      expect(responseChrome.body.redirectTo).toBe('https://example.com');
+
+      const contextSafari = { time: '15:00', userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15', language: 'ru' };
+      const responseSafari = await request(testApp)
+        .post('/evaluate')
+        .send(contextSafari);
+      expect(responseSafari.status).toBe(200);
+      expect(responseSafari.body.redirectTo).toBe('https://example.com');
+
+      const contextNoUserAgent = { time: '15:00', language: 'ru' };
+      const responseNoUserAgent = await request(testApp)
+        .post('/evaluate')
+        .send(contextNoUserAgent);
+      expect(responseNoUserAgent.status).toBe(200);
+      expect(responseNoUserAgent.body.redirectTo).toBe('https://example.com');
+    });
+
+    it('should match rule without time condition for any time', async () => {
+      const rules: Rule[] = [
+        {
+          id: 1,
+          conditions: [
+            { type: 'user-agent', include: 'Chrome' },
+            { type: 'language', is: 'ru' }
+          ],
+          action: { redirectTo: 'https://test.com' }
+        }
+      ];
+      testEngine.loadRules(rules);
+
+      const contextMorning = { time: '08:00', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', language: 'ru' };
+      const responseMorning = await request(testApp)
+        .post('/evaluate')
+        .send(contextMorning);
+      expect(responseMorning.status).toBe(200);
+      expect(responseMorning.body.redirectTo).toBe('https://test.com');
+
+      const contextAfternoon = { time: '15:00', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', language: 'ru' };
+      const responseAfternoon = await request(testApp)
+        .post('/evaluate')
+        .send(contextAfternoon);
+      expect(responseAfternoon.status).toBe(200);
+      expect(responseAfternoon.body.redirectTo).toBe('https://test.com');
+
+      const contextEvening = { time: '22:00', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', language: 'ru' };
+      const responseEvening = await request(testApp)
+        .post('/evaluate')
+        .send(contextEvening);
+      expect(responseEvening.status).toBe(200);
+      expect(responseEvening.body.redirectTo).toBe('https://test.com');
+
+      const contextNoTime = { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', language: 'ru' };
+      const responseNoTime = await request(testApp)
+        .post('/evaluate')
+        .send(contextNoTime);
+      expect(responseNoTime.status).toBe(200);
+      expect(responseNoTime.body.redirectTo).toBe('https://test.com');
+    });
   });
 
   describe('POST /reload', () => {
